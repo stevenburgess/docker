@@ -336,7 +336,7 @@ func volumeCloneFrom(zfs *C.libzfs_handle_t, id, parent, mountPoint string) erro
 
 func (d *Driver) ZfsPath(id string) string {
 	log.Debugf("d->ZfsPath(%s)", id)
-	return d.options.zpoolName + "/" + id
+	return d.options.zpoolName + "/docker/" + id
 }
 
 func (d *Driver) Create(id string, parent string) error {
