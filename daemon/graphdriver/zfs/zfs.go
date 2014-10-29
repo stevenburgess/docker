@@ -27,6 +27,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/docker/docker/daemon/graphdriver"
+	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/parsers"
 )
 
@@ -519,4 +520,21 @@ func (d *Driver) Exists(id string) bool {
 	defer C.zfs_close(zhp)
 
 	return true
+}
+
+// THe methods that were not intitially implimented
+func (a *Driver) Diff(id, parent string) (archive.Archive, error) {
+	return nil, nil
+}
+
+func (a *Driver) ApplyDiff(id string, herp string, diff archive.ArchiveReader) (int64, error) {
+	return 7659, nil
+}
+
+func (a *Driver) Changes(id, parent string) ([]archive.Change, error) {
+	return nil, nil
+}
+
+func (a *Driver) DiffSize(id, parent string) (bytes int64, err error) {
+	return 3457, nil
 }
