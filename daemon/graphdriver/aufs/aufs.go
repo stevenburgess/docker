@@ -138,6 +138,7 @@ func (a Driver) rootPath() string {
 }
 
 func (Driver) String() string {
+	log.Debugf("d->String()")
 	return "aufs"
 }
 
@@ -152,6 +153,7 @@ func (a Driver) Status() [][2]string {
 // Exists returns true if the given id is registered with
 // this driver
 func (a Driver) Exists(id string) bool {
+	log.Debugf("d->Exists(%s)", id)
 	if _, err := os.Lstat(path.Join(a.rootPath(), "layers", id)); err != nil {
 		return false
 	}
@@ -161,6 +163,7 @@ func (a Driver) Exists(id string) bool {
 // Three folders are created for each id
 // mnt, layers, and diff
 func (a *Driver) Create(id, parent string) error {
+	log.Debugf("d->Create(%s, %s)", id, parent)
 	if err := a.createDirsFor(id); err != nil {
 		return err
 	}
@@ -206,6 +209,7 @@ func (a *Driver) createDirsFor(id string) error {
 // Unmount and remove the dir information
 func (a *Driver) Remove(id string) error {
 	// Protect the a.active from concurrent access
+	log.Debugf("d->Remove(%s)", id)
 	a.Lock()
 	defer a.Unlock()
 
@@ -245,6 +249,7 @@ func (a *Driver) Remove(id string) error {
 // Return the rootfs path for the id
 // This will mount the dir at it's given path
 func (a *Driver) Get(id, mountLabel string) (string, error) {
+	log.Debugf("d->Get(%s, %s)", id, mountLabel)
 	ids, err := getParentIds(a.rootPath(), id)
 	if err != nil {
 		if !os.IsNotExist(err) {
@@ -278,6 +283,7 @@ func (a *Driver) Get(id, mountLabel string) (string, error) {
 }
 
 func (a *Driver) Put(id string) {
+	log.Debugf("d->Put(%s)", id)
 	// Protect the a.active from concurrent access
 	a.Lock()
 	defer a.Unlock()
@@ -297,6 +303,7 @@ func (a *Driver) Put(id string) {
 // Diff produces an archive of the changes between the specified
 // layer and its parent layer which may be "".
 func (a *Driver) Diff(id, parent string) (archive.Archive, error) {
+	log.Debugf("d->Diff(%s, %s)", id, parent)
 	// AUFS doesn't need the parent layer to produce a diff.
 	return archive.TarWithOptions(path.Join(a.rootPath(), "diff", id), &archive.TarOptions{
 		Compression: archive.Uncompressed,
@@ -305,6 +312,7 @@ func (a *Driver) Diff(id, parent string) (archive.Archive, error) {
 }
 
 func (a *Driver) applyDiff(id string, diff archive.ArchiveReader) error {
+	log.Debugf("d->applyDiff(%s, %s)", id, diff)
 	return archive.Untar(diff, path.Join(a.rootPath(), "diff", id), nil)
 }
 
@@ -312,6 +320,7 @@ func (a *Driver) applyDiff(id string, diff archive.ArchiveReader) error {
 // and its parent and returns the size in bytes of the changes
 // relative to its base filesystem directory.
 func (a *Driver) DiffSize(id, parent string) (bytes int64, err error) {
+	log.Debugf("d->DiffSize(%s, %s)", id, parent)
 	// AUFS doesn't need the parent layer to calculate the diff size.
 	return utils.TreeSize(path.Join(a.rootPath(), "diff", id))
 }
@@ -320,6 +329,7 @@ func (a *Driver) DiffSize(id, parent string) (bytes int64, err error) {
 // layer with the specified id and parent, returning the size of the
 // new layer in bytes.
 func (a *Driver) ApplyDiff(id, parent string, diff archive.ArchiveReader) (bytes int64, err error) {
+	log.Debugf("d->AppyDiff(%s, %s)", id, parent)
 	// AUFS doesn't need the parent id to apply the diff.
 	if err = a.applyDiff(id, diff); err != nil {
 		return
@@ -333,6 +343,7 @@ func (a *Driver) ApplyDiff(id, parent string, diff archive.ArchiveReader) (bytes
 func (a *Driver) Changes(id, parent string) ([]archive.Change, error) {
 	// AUFS doesn't have snapshots, so we need to get changes from all parent
 	// layers.
+	log.Debugf("d->Changes(%s, %s)", id, parent)
 	layers, err := a.getParentLayerPaths(id)
 	if err != nil {
 		return nil, err
